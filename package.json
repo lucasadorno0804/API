@@ -8,7 +8,8 @@
     "dev:all": "npx concurrently \"npm run dev:api\" \"npm run dev:web\"",
     "install:all": "npm install --prefix bsl-web && npm install --prefix bsl-api",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "start": "node bsl-api/index.js"
   },
   "keywords": [],
   "author": "",
