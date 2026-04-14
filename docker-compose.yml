@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  bsl-postgres:
+    image: postgres:15-alpine
+    container_name: bsl-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bsldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - bsl_pgdata:/var/lib/postgresql/data
+      # Isso fará com que o banco recém-criado rode esse script para montar as tabelas iniciais.
+      - ./bsl-api/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  bsl_pgdata:
