@@ -7,9 +7,18 @@ const checkoutRoutes = require('./routes/checkout');
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+// 1. Configuração do CORS
+// O '*' libera para qualquer site (bom para testes). 
+// Se preferir restringir depois, substitua '*' por: 'https://vercel.app'
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
+// 2. Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/checkout', checkoutRoutes);
@@ -17,10 +26,12 @@ app.use('/api/financial', require('./routes/financial'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/inspections', require('./routes/inspections'));
 
+// 3. Arquivos estáticos
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const PORT = process.env.PORT;
+// 4. Inicialização do servidor (Correção das crases no console.log)
+const PORT = process.env.PORT || 3000; // Usa a porta do env ou 3000 como padrão
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
