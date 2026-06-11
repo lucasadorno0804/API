@@ -8,11 +8,20 @@ const checkoutRoutes = require('./routes/checkout');
 const app = express();
 
 // 1. Configuração do CORS
-// O '*' libera para qualquer site (bom para testes). 
-// Se preferir restringir depois, substitua '*' por: 'https://vercel.app'
-app.use(cors({
+/*app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));*/
+
+// 1. Configuração do CORS
+app.use(cors({
+  // Dica de segurança: Como já está em produção, é muito mais seguro 
+  // trocar o '*' pela URL exata do seu frontend para evitar ataques.
+  origin: 'https://esteticabsl.netlify.app',
+
+  // Aqui está a mágica: adicionamos o PATCH na lista!
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
