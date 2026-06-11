@@ -74,6 +74,10 @@ CREATE TABLE vehicle_inspections (
     checklist JSONB,
     images_urls JSONB,
     inspector_id UUID REFERENCES professionals(id),
+    signature TEXT,
+    is_locked BOOLEAN DEFAULT false,
+    selected_diagram_type VARCHAR(50),
+    vehicle_id UUID REFERENCES vehicles(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -114,10 +118,10 @@ INSERT INTO boxes (number, name) VALUES
 (3, 'Box Gamma');
 
 -- Professionals
-INSERT INTO professionals (name) VALUES 
+/*INSERT INTO professionals (name) VALUES 
 ('Brad Rocket'), 
 ('Jake Vance'),
-('Kevin Lima');
+('Kevin Lima');*/
 
 -- Serviços
 INSERT INTO service_catalog (name, category, base_price, estimated_time) VALUES

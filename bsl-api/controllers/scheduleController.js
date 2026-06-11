@@ -115,30 +115,57 @@ exports.createAppointment = async (req, res) => {
   }
 };
 
-// Edição (usado pelo arrastar e soltar da agenda)
+// Edição (usado pelo arrastar e soltar da agenda ou mudança de status)
 exports.updateAppointment = async (req, res) => {
   const { id } = req.params;
-  const { box_number, start_time } = req.body;
+  const { box_number, start_time, status } = req.body;
 
   try {
-    // Precisamos ajustar o end_time baseado na nova duração.
-    // Primeiro obtemos o agendamento atual para saber o serviço.
-    const currentRes = await pool.query('SELECT service_id FROM appointments WHERE id = $1', [id]);
+    const currentRes = await pool.query('SELECT service_id, box_number, start_time, end_time, status FROM appointments WHERE id = $1', [id]);
     if (currentRes.rows.length === 0) return res.status(404).json({ error: 'Agendamento não encontrado' });
     
-    const serviceRes = await pool.query('SELECT estimated_time FROM service_catalog WHERE id = $1', [currentRes.rows[0].service_id]);
-    const estimatedMinutes = serviceRes.rows[0].estimated_time;
-    
-    const startDate = new Date(start_time);
-    const endDate = new Date(startDate.getTime() + estimatedMinutes * 60000);
+    let queryArgs = [];
+    let setClauses = [];
+    let argCount = 1;
 
+    if (box_number !== undefined && start_time !== undefined) {
+      const serviceRes = await pool.query('SELECT estimated_time FROM service_catalog WHERE id = $1', [currentRes.rows[0].service_id]);
+      const estimatedMinutes = serviceRes.rows[0].estimated_time || 60;
+      
+      const startDate = new Date(start_time);
+      if (isNaN(startDate.getTime())) {
+        return res.status(400).json({ error: 'Data de início inválida' });
+      }
+      const endDate = new Date(startDate.getTime() + estimatedMinutes * 60000);
+
+      setClauses.push(`box_number = $${argCount++}`);
+      queryArgs.push(box_number);
+      
+      setClauses.push(`start_time = $${argCount++}`);
+      queryArgs.push(startDate.toISOString());
+      
+      setClauses.push(`end_time = $${argCount++}`);
+      queryArgs.push(endDate.toISOString());
+    }
+
+    if (status !== undefined) {
+      setClauses.push(`status = $${argCount++}`);
+      queryArgs.push(status);
+    }
+
+    if (setClauses.length === 0) {
+      return res.json(currentRes.rows[0]);
+    }
+
+    queryArgs.push(id);
     const updateQuery = `
       UPDATE appointments 
-      SET box_number = $1, start_time = $2, end_time = $3
-      WHERE id = $4
-      RETURNING id, box_number, start_time, end_time
+      SET ${setClauses.join(', ')}
+      WHERE id = $${argCount}
+      RETURNING id, box_number, start_time, end_time, status
     `;
-    const result = await pool.query(updateQuery, [box_number, startDate.toISOString(), endDate.toISOString(), id]);
+
+    const result = await pool.query(updateQuery, queryArgs);
     res.json(result.rows[0]);
   } catch (error) {
     if (error.code === '23P01') {

@@ -26,12 +26,28 @@ exports.updateChecklist = async (req, res) => {
   const { checklist, diagramType } = req.body;
   try {
     const isLocked = await inspectionsRepository.isLocked(id);
-    if (isLocked) return res.status(403).json({ error: 'Vistoria finalizada e bloqueada para edições.' });
+    if (isLocked) return res.status(403).json({ error: 'Vistoria bloqueada. Nenhuma alteração permitida.' });
 
     const updated = await inspectionsRepository.updateChecklist(id, checklist, diagramType);
     res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar checklist' });
+  }
+};
+
+exports.updateVehicle = async (req, res) => {
+  const { id } = req.params;
+  const { vehicleId } = req.body;
+  try {
+    const isLocked = await inspectionsRepository.isLocked(id);
+    if (isLocked) return res.status(403).json({ error: 'Vistoria bloqueada. Nenhuma alteração permitida.' });
+
+    const updated = await inspectionsRepository.updateVehicle(id, vehicleId);
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao vincular veículo' });
   }
 };
 

@@ -3,10 +3,19 @@ const pool = require('../db');
 class InspectionsRepository {
   async getByAppointmentId(appointmentId) {
     const res = await pool.query(`
-      SELECT vi.*, v.model as vehicle_model 
+      SELECT vi.*, 
+             COALESCE(v.id, v2.id) as vehicle_id,
+             COALESCE(v.model, v2.model) as vehicle_model,
+             COALESCE(v.brand, v2.brand) as vehicle_brand,
+             COALESCE(v.plate, v2.plate) as vehicle_plate,
+             COALESCE(c.id, c2.id) as client_id,
+             COALESCE(c.name, c2.name) as client_name
       FROM vehicle_inspections vi
       LEFT JOIN appointments a ON vi.appointment_id = a.id
       LEFT JOIN vehicles v ON a.vehicle_id = v.id
+      LEFT JOIN clients c ON v.client_id = c.id
+      LEFT JOIN vehicles v2 ON vi.vehicle_id = v2.id
+      LEFT JOIN clients c2 ON v2.client_id = c2.id
       WHERE vi.appointment_id = $1 LIMIT 1
     `, [appointmentId]);
     return res.rows[0];
@@ -14,13 +23,32 @@ class InspectionsRepository {
 
   async getById(id) {
     const res = await pool.query(`
-      SELECT vi.*, v.model as vehicle_model 
+      SELECT vi.*, 
+             COALESCE(v.id, v2.id) as vehicle_id,
+             COALESCE(v.model, v2.model) as vehicle_model,
+             COALESCE(v.brand, v2.brand) as vehicle_brand,
+             COALESCE(v.plate, v2.plate) as vehicle_plate,
+             COALESCE(c.id, c2.id) as client_id,
+             COALESCE(c.name, c2.name) as client_name
       FROM vehicle_inspections vi
       LEFT JOIN appointments a ON vi.appointment_id = a.id
       LEFT JOIN vehicles v ON a.vehicle_id = v.id
+      LEFT JOIN clients c ON v.client_id = c.id
+      LEFT JOIN vehicles v2 ON vi.vehicle_id = v2.id
+      LEFT JOIN clients c2 ON v2.client_id = c2.id
       WHERE vi.id = $1 LIMIT 1
     `, [id]);
     return res.rows[0];
+  }
+
+  async updateVehicle(id, vehicleId) {
+    const res = await pool.query(`
+      UPDATE vehicle_inspections 
+      SET vehicle_id = $1
+      WHERE id = $2 
+      RETURNING *
+    `, [vehicleId, id]);
+    return await this.getById(id);
   }
 
   async isLocked(id) {

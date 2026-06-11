@@ -13,8 +13,14 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/checkout', checkoutRoutes);
+app.use('/api/financial', require('./routes/financial'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/inspections', require('./routes/inspections'));
 
-const PORT = process.env.PORT || 3000;
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

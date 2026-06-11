@@ -23,6 +23,7 @@ const upload = multer({ storage: storage });
 router.get('/:appointmentId', inspectionsController.getInspection);
 router.post('/', inspectionsController.createInspection);
 router.put('/:id', inspectionsController.updateChecklist);
+router.put('/:id/vehicle', inspectionsController.updateVehicle);
 router.post('/:id/upload', upload.single('image'), inspectionsController.uploadImage);
 router.post('/:id/lock', inspectionsController.lockInspection);
 
