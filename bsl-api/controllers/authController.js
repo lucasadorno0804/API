@@ -26,7 +26,7 @@ exports.login = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.status(200).json({ token, user: { name: user.username, email: user.username } });
+    res.status(200).json({ token, user: { name: user.owner_name || user.username, email: user.username, company: user.company_name } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro no servidor' });

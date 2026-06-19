@@ -11,7 +11,7 @@ exports.getActiveAppointments = async (req, res) => {
       JOIN service_catalog s ON a.service_id = s.id
       JOIN vehicles v ON a.vehicle_id = v.id
       JOIN clients c ON v.client_id = c.id
-      WHERE a.status NOT IN ('Finalizado', 'Cancelado', 'Finalizado/Entregue')
+      WHERE a.status = 'Finalizado'
       ORDER BY a.start_time ASC
     `;
     const result = await pool.query(query);

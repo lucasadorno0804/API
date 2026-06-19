@@ -11,6 +11,17 @@ exports.getInspection = async (req, res) => {
   }
 };
 
+exports.getInspectionById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const inspection = await inspectionsRepository.getById(id);
+    if (!inspection) return res.status(404).json({ error: 'Vistoria não encontrada' });
+    res.json(inspection);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.createInspection = async (req, res) => {
   const { appointmentId, type } = req.body;
   try {

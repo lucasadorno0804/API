@@ -21,6 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.get('/:appointmentId', inspectionsController.getInspection);
+router.get('/id/:id', inspectionsController.getInspectionById);
 router.post('/', inspectionsController.createInspection);
 router.put('/:id', inspectionsController.updateChecklist);
 router.put('/:id/vehicle', inspectionsController.updateVehicle);
