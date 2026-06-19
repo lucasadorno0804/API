@@ -3,7 +3,8 @@ const repo = require('../repositories/dashboardRepository');
 class DashboardService {
   async getOccupancyData() {
     const current = await repo.getOccupancy();
-    const capacity = 20; // Capacidade máxima do pátio
+    const boxes = await repo.getTotalBoxes();
+    const capacity = boxes * 10; // 10 horas por box (08h às 18h)
     return {
       current,
       capacity,

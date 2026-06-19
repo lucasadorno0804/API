@@ -24,14 +24,15 @@ exports.getActiveAppointments = async (req, res) => {
 
 exports.payCheckout = async (req, res) => {
   const { id } = req.params;
-  const { amount, payment_method, extra_services } = req.body;
+  const { payment_method, extra_services } = req.body;
+  const amount = Number(req.body.amount) || 0;
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     // 1. Obter detalhes do appointment
-    const getAppQuery = `SELECT a.client_id, a.end_time FROM appointments a JOIN vehicles v ON a.vehicle_id = v.id WHERE a.id = $1`;
+    const getAppQuery = `SELECT v.client_id, a.end_time FROM appointments a JOIN vehicles v ON a.vehicle_id = v.id WHERE a.id = $1`;
     const appRes = await client.query(getAppQuery, [id]);
     
     if (appRes.rows.length === 0) {

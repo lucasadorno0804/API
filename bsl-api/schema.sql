@@ -1,3 +1,5 @@
+SET client_encoding = 'UTF8';
+
 -- Habilita extensão para restrições de agenda (EXCLUDE USING gist)
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 

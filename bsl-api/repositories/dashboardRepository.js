@@ -11,6 +11,12 @@ class DashboardRepository {
     return parseInt(res.rows[0].current_count || 0);
   }
 
+  async getTotalBoxes() {
+    const res = await pool.query('SELECT COUNT(*) as total FROM boxes');
+    return parseInt(res.rows[0].total || 1);
+  }
+
+
   async getRevenue(startDate, endDate) {
     const res = await pool.query(`
       SELECT SUM(amount) as total

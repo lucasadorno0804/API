@@ -38,16 +38,45 @@ class FinancialRepository {
     return res.rows;
   }
 
-  async getFlowData(startDate, endDate) {
+  async getFlowData(startDate, endDate, groupByMonth = false) {
+    let query = '';
+    if (groupByMonth) {
+      query = `
+        SELECT 
+          DATE_TRUNC('month', created_at) as data_ref,
+          SUM(CASE WHEN transaction_type = 'RECEITA' THEN amount ELSE 0 END) as receita,
+          SUM(CASE WHEN transaction_type = 'DESPESA' THEN amount ELSE 0 END) as despesa
+        FROM financial_transactions
+        WHERE created_at >= $1 AND created_at <= $2
+        GROUP BY DATE_TRUNC('month', created_at)
+        ORDER BY DATE_TRUNC('month', created_at) ASC
+      `;
+    } else {
+      query = `
+        SELECT 
+          DATE(created_at) as data_ref,
+          SUM(CASE WHEN transaction_type = 'RECEITA' THEN amount ELSE 0 END) as receita,
+          SUM(CASE WHEN transaction_type = 'DESPESA' THEN amount ELSE 0 END) as despesa
+        FROM financial_transactions
+        WHERE created_at >= $1 AND created_at <= $2
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at) ASC
+      `;
+    }
+    const res = await pool.query(query, [startDate, endDate]);
+    return res.rows;
+  }
+
+  async getAllTransactions(startDate, endDate) {
     const res = await pool.query(`
-      SELECT 
-        DATE(created_at) as data_ref,
-        SUM(CASE WHEN transaction_type = 'RECEITA' THEN amount ELSE 0 END) as receita,
-        SUM(CASE WHEN transaction_type = 'DESPESA' THEN amount ELSE 0 END) as despesa
-      FROM financial_transactions
-      WHERE created_at >= $1 AND created_at <= $2
-      GROUP BY DATE(created_at)
-      ORDER BY DATE(created_at) ASC
+      SELECT f.id, f.created_at, f.transaction_type, f.amount, f.payment_method, 
+             c.name as client_name, s.name as service_name
+      FROM financial_transactions f
+      LEFT JOIN clients c ON f.client_id = c.id
+      LEFT JOIN appointments a ON f.appointment_id = a.id
+      LEFT JOIN service_catalog s ON a.service_id = s.id
+      WHERE f.created_at >= $1 AND f.created_at <= $2
+      ORDER BY f.created_at DESC
     `, [startDate, endDate]);
     return res.rows;
   }
