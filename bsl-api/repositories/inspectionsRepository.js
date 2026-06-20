@@ -41,6 +41,29 @@ class InspectionsRepository {
     return res.rows[0];
   }
 
+  async getByIdOrShortId(id) {
+    const isFullUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+    const whereClause = isFullUuid ? "vi.id = $1" : "vi.id::text LIKE $1 || '%'";
+
+    const res = await pool.query(`
+      SELECT vi.*, 
+             COALESCE(v.id, v2.id) as vehicle_id,
+             COALESCE(v.model, v2.model) as vehicle_model,
+             COALESCE(v.brand, v2.brand) as vehicle_brand,
+             COALESCE(v.plate, v2.plate) as vehicle_plate,
+             COALESCE(c.id, c2.id) as client_id,
+             COALESCE(c.name, c2.name) as client_name
+      FROM vehicle_inspections vi
+      LEFT JOIN appointments a ON vi.appointment_id = a.id
+      LEFT JOIN vehicles v ON a.vehicle_id = v.id
+      LEFT JOIN clients c ON v.client_id = c.id
+      LEFT JOIN vehicles v2 ON vi.vehicle_id = v2.id
+      LEFT JOIN clients c2 ON v2.client_id = c2.id
+      WHERE ${whereClause} LIMIT 1
+    `, [id]);
+    return res.rows[0];
+  }
+
   async updateVehicle(id, vehicleId) {
     const res = await pool.query(`
       UPDATE vehicle_inspections 
