@@ -55,6 +55,8 @@ class FinancialController {
       console.error(error);
       res.status(500).json({ error: error.message || 'Erro ao gerar relatório de inteligência artificial' });
     }
+  }
+
   async deleteTransaction(req, res) {
     try {
       const { id } = req.params;
