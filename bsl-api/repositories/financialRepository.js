@@ -89,6 +89,29 @@ class FinancialRepository {
     `, [amount, category]);
     return res.rows[0];
   }
+
+  async getRecentTransactions(limit = 15) {
+    const res = await pool.query(`
+      SELECT f.id, f.created_at, f.transaction_type, f.amount, f.payment_method, 
+             c.name as client_name, s.name as service_name
+      FROM financial_transactions f
+      LEFT JOIN clients c ON f.client_id = c.id
+      LEFT JOIN appointments a ON f.appointment_id = a.id
+      LEFT JOIN service_catalog s ON a.service_id = s.id
+      ORDER BY f.created_at DESC
+      LIMIT $1
+    `, [limit]);
+    return res.rows;
+  }
+
+  async deleteTransaction(id) {
+    const res = await pool.query(`
+      DELETE FROM financial_transactions
+      WHERE id = $1
+      RETURNING *
+    `, [id]);
+    return res.rows[0];
+  }
 }
 
 module.exports = new FinancialRepository();

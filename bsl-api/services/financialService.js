@@ -138,7 +138,8 @@ class FinancialService {
         commission_rate: Number(c.commission_rate),
         commission_value: Number(c.commission_value)
       })),
-      flowData
+      flowData,
+      transactions: await repo.getRecentTransactions(15)
     };
   }
 
@@ -169,6 +170,15 @@ class FinancialService {
   async addExpense(category, amount) {
     if (amount <= 0) throw new Error("Valor deve ser maior que zero.");
     return await repo.createExpense(category, amount);
+  }
+
+  async deleteTransaction(id) {
+    if (!id) throw new Error("ID da transação não fornecido.");
+    const deleted = await repo.deleteTransaction(id);
+    if (!deleted) {
+      throw new Error("Transação não encontrada ou já deletada.");
+    }
+    return deleted;
   }
   async generateAIInsights(period) {
     if (!process.env.AI_API_KEY) {

@@ -55,6 +55,18 @@ class FinancialController {
       console.error(error);
       res.status(500).json({ error: error.message || 'Erro ao gerar relatório de inteligência artificial' });
     }
+  async deleteTransaction(req, res) {
+    try {
+      const { id } = req.params;
+      const deleted = await service.deleteTransaction(id);
+      res.status(200).json({ success: true, deleted });
+    } catch (error) {
+      console.error(error);
+      if (error.message.includes("não encontrada")) {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(500).json({ error: 'Erro ao excluir transação' });
+    }
   }
 }
 
