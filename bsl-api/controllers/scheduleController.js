@@ -274,3 +274,32 @@ exports.deleteProfessional = async (req, res) => {
     res.status(500).json({ error: 'Erro ao remover profissional.' });
   }
 };
+
+exports.getServices = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM service_catalog ORDER BY category, name');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar serviços.' });
+  }
+};
+
+exports.updateService = async (req, res) => {
+  const { id } = req.params;
+  const { name, category, base_price, estimated_time } = req.body;
+  try {
+    const query = `
+      UPDATE service_catalog 
+      SET name = $1, category = $2, base_price = $3, estimated_time = $4
+      WHERE id = $5
+      RETURNING *
+    `;
+    const result = await pool.query(query, [name, category, base_price, estimated_time, id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Serviço não encontrado' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao atualizar serviço no catálogo.' });
+  }
+};

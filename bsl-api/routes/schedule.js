@@ -13,5 +13,7 @@ router.delete('/appointments/:id', scheduleController.deleteAppointment);
 router.post('/services', scheduleController.createService);
 router.post('/professionals', scheduleController.createProfessional);
 router.delete('/professionals/:id', scheduleController.deleteProfessional);
+router.get('/services', scheduleController.getServices);
+router.patch('/services/:id', scheduleController.updateService);
 
 module.exports = router;
